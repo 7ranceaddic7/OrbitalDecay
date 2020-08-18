@@ -9,9 +9,6 @@ Changelog
 	Added support for ToolbarController
 	Added support for hiding the ui via the F2
 	Added support for hiding the UI when game paused
-	New Dependencies
-		Clickthroughblocker
-		ToolbarController
 	Added InstallChecker
 	Added AssemblyVersion.tt
 	Fixed Orbital Decay Utilities window for the editor (was putting everything on a single line)
@@ -20,4 +17,14 @@ Changelog
 	Made window in editor scrollable, so it won't use the entire screen.
 	Some minor editing of editor window, mainly removing unnecessary lines
 	In editor, made initial position to the right of the part list
-	In editor, only show fuel resources for which there are engins onboard
+	In editor, only show fuel resources for which there are engines onboard
+	Dependencies:
+		SolarCycleSimulator
+		ClickThroughBlocker
+		ToolbarController
+
+1.7.0.1
+	Rewrote the VesselData.cs to use internal class instead of confignodes
+	Replaced confignode structure with Dictionary using vessel id (GUID)
+	Fixed bug in DecayManager, which in CheckVesselProximity was comparing the vessel to itself and getting 0, this was preventing any decay from happening during timewarp
+	Misc. cleanup in DecayManager

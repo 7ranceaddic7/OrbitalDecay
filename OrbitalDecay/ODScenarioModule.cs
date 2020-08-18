@@ -11,13 +11,20 @@ namespace WhitecatIndustries.Source
             try
             {
                 ConfigNode savedVesselsInfo = new ConfigNode("Vessels");
+
+                foreach (var vdc in VesselData.VesselInformationDict.Values)
+                {
+                    savedVesselsInfo.AddNode("VESSEL", vdc.GetConfigNode());
+                }
+#if false
                 foreach (ConfigNode nod in VesselData.VesselInformation.GetNodes("VESSEL"))
                 {
                     savedVesselsInfo.AddNode(nod);
                 }
+#endif
                 node.AddNode(savedVesselsInfo);
                 base.OnSave(node);
-                print("scenario saved, ship count : " + VesselData.VesselInformation.CountNodes.ToString());
+                print("scenario saved, ship count : " + VesselData.VesselInformationDict.Count.ToString());
 
             }
             catch (Exception e)
@@ -34,8 +41,16 @@ namespace WhitecatIndustries.Source
                 base.OnLoad(node);
                 if (node.HasNode("Vessels"))
                 {
+                    ConfigNode vNode = node.GetNode("Vessels");
+                    foreach (var n in vNode.GetNodes("VESSEL"))
+                    {
+                        VesselDataClass vdc = new VesselDataClass(n);
+                        VesselData.VesselInformationDict.Add(vdc.id, vdc);
+                    }
+#if false
                     VesselData.VesselInformation = node.GetNode("Vessels");
-                    print("scenario loaded, ship count : " + VesselData.VesselInformation.CountNodes.ToString());
+#endif
+                    print("scenario loaded, ship count : " + VesselData.VesselInformationDict.Count.ToString());
                     
                 }
                 VesselData.VesselsLoaded = true;

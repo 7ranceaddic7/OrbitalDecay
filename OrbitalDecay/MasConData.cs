@@ -340,8 +340,8 @@ namespace WhitecatIndustries.Source
             /*
             double GravitationalConstant = 6.67408 * Math.Pow(10.0, -11.0); // G [Newton Meter Squared per Square Kilograms] 
             double AccelerationToGal = 100.0;
-            double GalAtSurface = ((GravitationalConstant * vessel.orbitDriver.orbit.referenceBody.Mass * vessel.GetTotalMass()));
-            double GalAtVerticalDistance = ((GravitationalConstant * vessel.orbitDriver.orbit.referenceBody.Mass * vessel.GetTotalMass()) / (Math.Pow(vessel.orbitDriver.orbit.altitude,2.0))) * AccelerationToGal;
+            double GalAtSurface = ((GravitationalConstant * vessel.orbitDriver.orbit.referenceBody.Mass * vessel.GetCorrectVesselMass()));
+            double GalAtVerticalDistance = ((GravitationalConstant * vessel.orbitDriver.orbit.referenceBody.Mass * vessel.GetCorrectVesselMass()) / (Math.Pow(vessel.orbitDriver.orbit.altitude,2.0))) * AccelerationToGal;
             GalAtDistance = GalAtDistance + GalAtVerticalDistance;
             */
 

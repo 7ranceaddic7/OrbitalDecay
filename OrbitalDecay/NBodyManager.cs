@@ -69,7 +69,7 @@ namespace WhitecatIndustries.Source
 
         }
 
-        #region InfluencingBodyLists
+#region InfluencingBodyLists
         public static List<CelestialBody> InfluencingBodiesV(Vessel vessel)
         {
             List<CelestialBody> InfluencingBodies = new List<CelestialBody>();
@@ -117,9 +117,9 @@ namespace WhitecatIndustries.Source
 
             return InfluencingBodies;
         }
-        #endregion
+#endregion
 
-        #region InfluencingAccelerationLists
+#region InfluencingAccelerationLists
 
         public static List<Vector3d> InfluencingAccelerationsB(Vessel vessel, double time)
         {
@@ -138,7 +138,7 @@ namespace WhitecatIndustries.Source
                 double VesselMass = VesselData.FetchMass(vessel);
                 if (VesselMass == 0) // Incase vesselData hasnt caught up! 
                 {
-                    VesselMass = vessel.GetTotalMass() * 1000;
+                    VesselMass = vessel.GetCorrectVesselMass() * 1000;
                 }
 
                 double PhaseAngle = FindPhaseAngleBetweenObjects(vessel.orbit, Body.orbit);
@@ -320,9 +320,9 @@ namespace WhitecatIndustries.Source
             return InfluencingAccelerations;
         }
 
-        #endregion
+#endregion
 
-        #region Calculations
+#region Calculations
 
         public static double CalculateHillSphere(Vessel vessel)
         {
@@ -386,9 +386,9 @@ namespace WhitecatIndustries.Source
             return FinalVelocityVector;
         }
 
-        #endregion
+#endregion
 
-        #region ObjectManagement
+#region ObjectManagement
 
         public static void ManageBody(CelestialBody body)
         {
@@ -414,9 +414,9 @@ namespace WhitecatIndustries.Source
             }
         }
 
-        #endregion
+#endregion
 
-        #region OrbitManagement
+#region OrbitManagement
 
         public static Orbit NewCalculatedOrbit(Vessel vessel, Orbit oldOrbit, Vector3d FinalVelocity, double time)
         {
@@ -436,7 +436,7 @@ namespace WhitecatIndustries.Source
             return orbit;
         }
 
-        #region non state vector components
+#region non state vector components
         public static double CalculateDeltaInclination(Vector3d position, Vector3d DeltaV, double time, double timeinterval, Vessel vessel, CelestialBody body)
         {
             double Inc = 0;
@@ -445,7 +445,7 @@ namespace WhitecatIndustries.Source
 
             if (Mass == 0)
             {
-                Mass = vessel.GetTotalMass() * 1000;
+                Mass = vessel.GetCorrectVesselMass() * 1000;
             }
 
 
@@ -594,9 +594,9 @@ namespace WhitecatIndustries.Source
 
                     return UtilMath.RadiansToDegrees(LPE);
                 }
-                #endregion
+#endregion
 
-                #endregion
+#endregion
 
                 public static void ManageOrbitalPredictionsBody(CelestialBody body)
                 {
@@ -672,7 +672,7 @@ namespace WhitecatIndustries.Source
           /*
          * /
 
-                        #region Depreciated Timewarp Calculations
+#region Depreciated Timewarp Calculations
                         /*
                     if (TimeWarp.CurrentRate > 1000 && TimeWarp.CurrentRate <= 10000) // Anti Lag Method
                     {
@@ -891,7 +891,7 @@ namespace WhitecatIndustries.Source
             }
         */
 
-        #endregion
+#endregion
     }
 }
 #endif

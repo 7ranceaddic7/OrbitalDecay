@@ -11,7 +11,7 @@ creative commons license. See <http://creativecommons.org/licenses/by-nc-sa/3.0/
 for full details.
 
 Attribution — You are free to modify this code, so long as you mention that the resulting
-work is based upon or adapted from this code.
+work is based upon or adapted from this code.Get
  * 
 Non-commercial - You may not use this work for commercial purposes.
 

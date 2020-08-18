@@ -1,4 +1,3 @@
-D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\obj\Debug\OrbitalDecay.csprojAssemblyReference.cache
 D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\obj\Debug\OrbitalDecay.csproj.CoreCompileInputs.cache
 D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\bin\Debug\OrbitalDecay.dll
 D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\bin\Debug\OrbitalDecay.pdb

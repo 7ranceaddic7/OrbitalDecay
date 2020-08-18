@@ -138,11 +138,11 @@ namespace WhitecatIndustries.Source
                 {
                     ScreenMessages.PostScreenMessage("Warning: " + vessel.vesselName + " has run out of " + ResourceName + ", Station Keeping disabled.");
                     VesselData.UpdateStationKeeping(vessel, false);
-                    VesselData.UpdateVesselFuel(vessel, 0);
+                    //VesselData.UpdateVesselFuel(vessel, 0);
                 }
                 else
                 {
-                    VesselData.UpdateVesselFuel(vessel, FuelNew);
+                    //VesselData.UpdateVesselFuel(vessel, FuelNew);
                     ResourceManager.RemoveResources(vessel, LostFuel);
                 }
             }
