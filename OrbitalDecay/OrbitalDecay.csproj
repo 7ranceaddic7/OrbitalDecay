@@ -42,6 +42,9 @@
     <Reference Include="ClickThroughBlocker">
       <HintPath>R:\KSP_1.9.1_dev\GameData\000_ClickThroughBlocker\Plugins\ClickThroughBlocker.dll</HintPath>
     </Reference>
+    <Reference Include="KSP_Log">
+      <HintPath>R:\KSP_1.9.1_dev\GameData\SpaceTuxLibrary\Plugins\KSP_Log.dll</HintPath>
+    </Reference>
     <Reference Include="SolarCycleSimulator, Version=1.1.0.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>R:\KSP_1.9.1_dev\GameData\WhitecatIndustries\SolarCycleSimulator\Plugins\SolarCycleSimulator.dll</HintPath>

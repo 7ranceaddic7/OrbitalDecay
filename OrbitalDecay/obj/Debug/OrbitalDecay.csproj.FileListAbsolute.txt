@@ -7,3 +7,5 @@ D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\obj\Debug\OrbitalDecay.dll
 D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\obj\Debug\OrbitalDecay.pdb
 D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\bin\Debug\ClickThroughBlocker.dll
 D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\bin\Debug\ToolbarControl.dll
+D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\bin\Debug\KSP_Log.dll
+D:\Users\jbb\github\OrbitalDecay\OrbitalDecay\obj\Debug\OrbitalDecay.csprojAssemblyReference.cache

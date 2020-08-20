@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using KSP_Log;
 
 namespace WhitecatIndustries.Source
 {
@@ -65,10 +66,10 @@ namespace WhitecatIndustries.Source
             SMA = v.GetOrbitDriver().orbit.semiMajorAxis;
             ECC = v.GetOrbitDriver().orbit.eccentricity;
             INC = v.GetOrbitDriver().orbit.inclination;
-            LPE = v.GetOrbitDriver().orbit.argumentOfPeriapsis;
+            EPH = v.GetOrbitDriver().orbit.epoch;
             LAN = v.GetOrbitDriver().orbit.LAN;
             MNA = v.GetOrbitDriver().orbit.meanAnomalyAtEpoch;
-            EPH = v.GetOrbitDriver().orbit.epoch;
+            LPE = v.GetOrbitDriver().orbit.argumentOfPeriapsis;
 
             // Fuel = ???;
         }
@@ -127,7 +128,7 @@ namespace WhitecatIndustries.Source
     [KSPAddon(KSPAddon.Startup.EveryScene, false)]
     public class VesselData : MonoBehaviour
     {
-
+        static Log Log = null;
 
         internal static Dictionary<Guid, VesselDataClass> VesselInformationDict = new Dictionary<Guid, VesselDataClass>();
 
@@ -147,6 +148,8 @@ namespace WhitecatIndustries.Source
 
         public void Awake()
         {
+            if (Log == null)
+                Log = new Log("VesselData");
             FilePath = KSPUtil.ApplicationRootPath +
                        "GameData/WhitecatIndustries/OrbitalDecay/PluginData/VesselData.cfg";
 
@@ -219,7 +222,7 @@ namespace WhitecatIndustries.Source
                         HighLogic.LoadedScene != GameScenes.LOADINGBUFFER && 
                         HighLogic.LoadedScene != GameScenes.MAINMENU)
 #else
-                    if (HighLogic.LoadedSceneIsFlight || HighLogic.LoadedScene != GameScenes.TRACKSTATION || HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                    if (HighLogic.LoadedSceneIsFlight || HighLogic.LoadedScene == GameScenes.TRACKSTATION || HighLogic.LoadedScene == GameScenes.SPACECENTER)
 #endif
                     {
                         Vessel vessel = null;
@@ -354,12 +357,15 @@ namespace WhitecatIndustries.Source
 
         public static void UpdateActiveVesselData(Vessel vessel)
         {
+            Log.Info("UpdateActiveVesselData, vessel.id: " + vessel.id);
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 vdc.Mass = vessel.GetCorrectVesselMass() * 1000;
                 vdc.Area = vessel.CalculateVesselArea();
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
 #if false
             ConfigNode VesselNode = new ConfigNode("VESSEL");
             bool found = false;
@@ -386,11 +392,14 @@ namespace WhitecatIndustries.Source
 
         public static void ClearVesselData(Vessel vessel)
         {
+            Log.Info("ClearVesselData, vessel.id: " + vessel.id);
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 VesselInformationDict.Remove(vessel.id);
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
 
 #if false
             ConfigNode VesselNode = new ConfigNode("VESSEL");
@@ -511,11 +520,16 @@ namespace WhitecatIndustries.Source
 
         public static double FetchMass(Vessel vessel)
         {
+            Log.Info("FetchMass, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 return vdc.Mass;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
             return 0;
 #if false
             ConfigNode Data = VesselInformation;
@@ -543,11 +557,16 @@ namespace WhitecatIndustries.Source
 
         public static double FetchArea(Vessel vessel)
         {
+            Log.Info("FetchArea, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 return vdc.Area;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
             return 0;
 #if false
             ConfigNode Data = VesselInformation;
@@ -602,11 +621,17 @@ namespace WhitecatIndustries.Source
 
         public static void UpdateVesselSMA(Vessel vessel, double SMA)
         {
+            Log.Info("UpdateVesselSMA, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
+                Log.Info("Setting SMA: " + SMA);
                 vdc.SMA = SMA;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
 #if false
             ConfigNode Data = VesselInformation;
             bool Vesselfound = false;
@@ -630,11 +655,17 @@ namespace WhitecatIndustries.Source
 
         public static double FetchSMA(Vessel vessel)
         {
+            Log.Info("FetchSMA, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
+                Log.Info("FetchSMA: " + vdc.SMA);
                 return vdc.SMA;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
             return 0;
 #if false
             ConfigNode Data = VesselInformation;
@@ -662,6 +693,8 @@ namespace WhitecatIndustries.Source
 
         public static void UpdateVesselECC(Vessel vessel, double ECC)
         {
+            Log.Info("UpdateVesselECC, vessel.id: " + vessel.id);
+
             if (double.IsNaN(ECC)) // No NANs here please!
                 ECC = 0.0;
             VesselDataClass vdc;
@@ -669,6 +702,9 @@ namespace WhitecatIndustries.Source
             {
                 vdc.ECC = ECC;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
 #if aflse
             ConfigNode Data = VesselInformation;
             bool Vesselfound = false;
@@ -693,11 +729,16 @@ namespace WhitecatIndustries.Source
 
         public static double FetchECC(Vessel vessel)
         {
+            Log.Info("FetchECC, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 return vdc.ECC;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
             return 0;
 #if false
             ConfigNode Data = VesselInformation;
@@ -728,11 +769,16 @@ namespace WhitecatIndustries.Source
 
         public static void UpdateVesselINC(Vessel vessel, double INC)
         {
+            Log.Info("UpdateVesselINC, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 vdc.INC = INC;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
 #if false
             ConfigNode Data = VesselInformation;
             bool Vesselfound = false;
@@ -756,11 +802,16 @@ namespace WhitecatIndustries.Source
 
         public static double FetchINC(Vessel vessel)
         {
+            Log.Info("FetchINC, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 return vdc.INC;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
             return 0;
 #if false
             ConfigNode Data = VesselInformation;
@@ -788,11 +839,16 @@ namespace WhitecatIndustries.Source
 
         public static void UpdateVesselLPE(Vessel vessel, double LPE)
         {
+            Log.Info("UpdateVesselLPE, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 vdc.LPE = LPE;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
 #if false
             ConfigNode Data = VesselInformation;
             bool Vesselfound = false;
@@ -816,11 +872,16 @@ namespace WhitecatIndustries.Source
 
         public static double FetchLPE(Vessel vessel)
         {
+            Log.Info("FetchLPE, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 return vdc.LPE;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
             return 0;
 #if false
             ConfigNode Data = VesselInformation;
@@ -848,11 +909,16 @@ namespace WhitecatIndustries.Source
 
         public static void UpdateVesselLAN(Vessel vessel, double LAN)
         {
+            Log.Info("UpdateVesselLAN, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 vdc.LAN = LAN;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
 #if false
             ConfigNode Data = VesselInformation;
             bool Vesselfound = false;
@@ -876,11 +942,16 @@ namespace WhitecatIndustries.Source
 
         public static double FetchLAN(Vessel vessel)
         {
+            Log.Info("FetchLAN, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 return vdc.LAN;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
             return 0;
 #if false
             ConfigNode Data = VesselInformation;
@@ -908,11 +979,16 @@ namespace WhitecatIndustries.Source
 
         public static void UpdateVesselMNA(Vessel vessel, double MNA)
         {
+            Log.Info("UpdateVesselMNA, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 vdc.MNA = MNA;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
 #if false
             ConfigNode Data = VesselInformation;
             bool Vesselfound = false;
@@ -936,11 +1012,16 @@ namespace WhitecatIndustries.Source
 
         public static double FetchMNA(Vessel vessel)
         {
+            Log.Info("FetchMNA, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 return vdc.MNA;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
             return 0;
 #if false
             ConfigNode Data = VesselInformation;
@@ -968,11 +1049,16 @@ namespace WhitecatIndustries.Source
 
         public static void UpdateVesselEPH(Vessel vessel, double EPH)
         {
+            Log.Info("UpdateVesselEPH, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 vdc.EPH = EPH;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
 #if false
             ConfigNode Data = VesselInformation;
             bool Vesselfound = false;
@@ -996,11 +1082,16 @@ namespace WhitecatIndustries.Source
 
         public static double FetchEPH(Vessel vessel)
         {
+            Log.Info("FetchEPH, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 return vdc.EPH;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
             return 0;
 #if false
             ConfigNode Data = VesselInformation;
@@ -1073,12 +1164,17 @@ namespace WhitecatIndustries.Source
 
         public static void UpdateBody(Vessel vessel, CelestialBody body)
         {
+            Log.Info("UpdateBody, vessel.id: " + vessel.id);
+
             VesselDataClass vdc;
             if (VesselInformationDict.TryGetValue(vessel.id, out vdc))
             {
                 vdc.ReferenceBody = body;
                 vdc.ReferenceBodyName = body.name;
             }
+            else
+                Log.Info("Vessel not found: " + vessel.id);
+
 #if false
             ConfigNode Data = VesselInformation;
             bool Vesselfound = false;

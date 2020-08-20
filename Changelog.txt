@@ -24,7 +24,13 @@ Changelog
 		ToolbarController
 
 1.7.0.1
+	Fixed vessel mass calculation for unloaded vessels
 	Rewrote the VesselData.cs to use internal class instead of confignodes
 	Replaced confignode structure with Dictionary using vessel id (GUID)
 	Fixed bug in DecayManager, which in CheckVesselProximity was comparing the vessel to itself and getting 0, this was preventing any decay from happening during timewarp
 	Misc. cleanup in DecayManager
+
+1.7.0.2
+	Fixed stuttering and resetting of vessel orbital position
+	Fixed issues with timerate not being honored correctly
+	Cleaned up code regarding timerate

@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using KSP_Log;
 
 namespace WhitecatIndustries.Source
 {
@@ -35,6 +36,7 @@ namespace WhitecatIndustries.Source
     {
         #region Declared Variables
 
+        static Log Log = null;
         private const float _uptInterval = 1.0f;
         private const float _updIntervalTenth = _uptInterval / 10f;
         private float _lastUpdate;
@@ -65,6 +67,9 @@ namespace WhitecatIndustries.Source
 
         public void Start()
         {
+            if (Log == null)
+                Log = new Log("DecayManager");
+
             if (!HighLogic.LoadedSceneIsGame || HighLogic.LoadedScene == GameScenes.LOADING || HighLogic.LoadedScene == GameScenes.LOADINGBUFFER || HighLogic.LoadedScene == GameScenes.MAINMENU) return;
             CatchupResourceMassAreaDataComplete = false;
             // GameEvents -- //
@@ -95,6 +100,7 @@ namespace WhitecatIndustries.Source
                 if (vessels.Current == null) continue;
                 if (vessels.Current.situation == situation)
                 {
+                    Log.Info("CatchUpOrbit 1");
                     CatchUpOrbit(vessels.Current);
                 }
             }
@@ -110,6 +116,7 @@ namespace WhitecatIndustries.Source
                 if (vessels.Current.situation == situation1 ||
                     vessels.Current.situation == situation2)
                 {
+                    Log.Info("CatchUpOrbit 2");
                     CatchUpOrbit(vessels.Current);
                 }
             }
@@ -128,7 +135,7 @@ namespace WhitecatIndustries.Source
 
         public void UpdateActiveVesselInformationPart(Part part) // Until eventdata OnPartResourceFlowState works! // 1.3.0
         {
-            if (part.vessel != FlightGlobals.ActiveVessel || TimeWarp.CurrentRate != 0) return;
+            if (part.vessel != FlightGlobals.ActiveVessel || TimeWarp.CurrentRate >1 /*!= 0 */) return;
             if (HighLogic.LoadedScene != GameScenes.FLIGHT || GuiToggled) return;
             VesselData.UpdateActiveVesselData(FlightGlobals.ActiveVessel);
             GuiToggled = true;
@@ -400,10 +407,12 @@ namespace WhitecatIndustries.Source
                     if (HighLogic.LoadedScene != GameScenes.TRACKSTATION || Settings.ReadPT() != true) continue;
                     if (Settings.ReadDT())
                     {
+                        Log.Info("CatchUpOrbit 3");
                         CatchUpOrbit(vessel);
                     }
                     else if (Settings.ReadDT() == false && vessel.vesselType != VesselType.Debris)
                     {
+                        Log.Info("CatchUpOrbit 4");
                         CatchUpOrbit(vessel);
                     }
                     else
@@ -466,8 +475,10 @@ namespace WhitecatIndustries.Source
 
         public static void CatchUpOrbit(Vessel vessel)
         {
+
             if (vessel.situation == Vessel.Situations.PRELAUNCH || vessel.situation == Vessel.Situations.LANDED) return;
-            if (!(VesselData.FetchSMA(vessel) < vessel.GetOrbitDriver().orbit.semiMajorAxis) ||
+
+            if (VesselData.FetchSMA(vessel) >= vessel.GetOrbitDriver().orbit.semiMajorAxis ||
                 CheckVesselProximity(3, vessel)) return;
             try
             {
@@ -493,6 +504,7 @@ namespace WhitecatIndustries.Source
                 }
             }
 
+
             if (VesselData.FetchSMA(vessel) == 0) return;
             CelestialBody oldBody = vessel.orbitDriver.orbit.referenceBody;
             Orbit orbit = vessel.orbitDriver.orbit;
@@ -505,6 +517,7 @@ namespace WhitecatIndustries.Source
             orbit.epoch = vessel.orbit.epoch;
             orbit.referenceBody = vessel.orbit.referenceBody;
             orbit.Init();
+
 
             orbit.UpdateFromUT(HighLogic.CurrentGame.UniversalTime);
             vessel.orbitDriver.pos = vessel.orbit.pos.xzy; // Possibly remove these for NBody
@@ -960,9 +973,11 @@ namespace WhitecatIndustries.Source
             double decayForce = deltaVelocity * (VesselData.FetchMass(vessel) * 1000);
             GameObject thisVessel = new GameObject();
 
-            if (TimeWarp.CurrentRate == 0 || TimeWarp.CurrentRate > 0 && TimeWarp.WarpMode == TimeWarp.Modes.LOW)
+            if (TimeWarp.CurrentRate > 1)
             {
-                if (vessel.vesselType == VesselType.EVA) return;
+                if (/* TimeWarp.CurrentRate == 0 || TimeWarp.CurrentRate > 0 && */ TimeWarp.WarpMode == TimeWarp.Modes.LOW)
+                {
+                    if (vessel.vesselType == VesselType.EVA) return;
 #if false
                 foreach (Part p in vessel.parts)
                 {
@@ -975,20 +990,22 @@ namespace WhitecatIndustries.Source
                     }
                 }
 #endif
-                VesselData.UpdateVesselSMA(vessel, newSemiMajorAxis);
-            }
+                    VesselData.UpdateVesselSMA(vessel, newSemiMajorAxis);
+                }
 
-            else if (TimeWarp.CurrentRate > 0 && TimeWarp.WarpMode == TimeWarp.Modes.HIGH) // 1.3.0 Timewarp Fix
-            {
-                bool multipleLoadedSceneVessels = false; // 1.4.0 Debris warp fix
-                multipleLoadedSceneVessels = CheckVesselProximity(1, vessel);
+                else // if (TimeWarp.CurrentRate > 0 && TimeWarp.WarpMode == TimeWarp.Modes.HIGH) // 1.3.0 Timewarp Fix
+                {
+                    bool multipleLoadedSceneVessels = false; // 1.4.0 Debris warp fix
+                    multipleLoadedSceneVessels = CheckVesselProximity(1, vessel);
 
-                if (multipleLoadedSceneVessels) return;
-                if (vessel.vesselType == VesselType.EVA) return;
-                //NBodyManager.ManageVessel(vessel); // 1.6.0 NBody
+                    if (multipleLoadedSceneVessels) return;
+                    if (vessel.vesselType == VesselType.EVA) return;
+                    //NBodyManager.ManageVessel(vessel); // 1.6.0 NBody
 
-                VesselData.UpdateVesselSMA(vessel, VesselData.FetchSMA(vessel) - decayValue);
-                CatchUpOrbit(vessel);
+                    VesselData.UpdateVesselSMA(vessel, VesselData.FetchSMA(vessel) - decayValue);
+                    Log.Info("CatchUpOrbit 6");
+                    CatchUpOrbit(vessel);
+                }
             }
         }
 
@@ -1007,9 +1024,12 @@ namespace WhitecatIndustries.Source
             double decayForce = deltaVelocity * (VesselData.FetchMass(vessel) / 1000.0);
             GameObject thisVessel = new GameObject();
 
-            if (TimeWarp.CurrentRate == 0 || TimeWarp.CurrentRate > 0 && TimeWarp.WarpMode == TimeWarp.Modes.LOW)
+            Log.Info("TimeWarp.CurrentRate: " + TimeWarp.CurrentRate);
+            if (TimeWarp.CurrentRate > 1)
             {
-                if (vessel.vesselType == VesselType.EVA) return;
+                if (/* TimeWarp.CurrentRate == 0 || TimeWarp.CurrentRate > 1 && */ TimeWarp.WarpMode == TimeWarp.Modes.LOW)
+                {
+                    if (vessel.vesselType == VesselType.EVA) return;
 #if false
                 foreach (Part p in vessel.parts)
                 {
@@ -1020,18 +1040,20 @@ namespace WhitecatIndustries.Source
                     }
                 }
 #endif
-                VesselData.UpdateVesselSMA(vessel, newSemiMajorAxis);
+                    VesselData.UpdateVesselSMA(vessel, newSemiMajorAxis);
 
-            }
+                }
 
-            else if (TimeWarp.CurrentRate > 0 && TimeWarp.WarpMode == TimeWarp.Modes.HIGH) // 1.3.0 Timewarp Fix
-            {
-                // 1.4.0 Debris warp fix
-                bool multipleLoadedSceneVessels = CheckVesselProximity(2, vessel);
-                if (multipleLoadedSceneVessels) return;
-                if (vessel.vesselType == VesselType.EVA) return;
-                VesselData.UpdateVesselSMA(vessel, VesselData.FetchSMA(vessel) - decayValue);
-                CatchUpOrbit(vessel);
+                else // if (TimeWarp.CurrentRate > 1 && TimeWarp.WarpMode == TimeWarp.Modes.HIGH) // 1.3.0 Timewarp Fix
+                {
+                    // 1.4.0 Debris warp fix
+                    bool multipleLoadedSceneVessels = CheckVesselProximity(2, vessel);
+                    if (multipleLoadedSceneVessels) return;
+                    if (vessel.vesselType == VesselType.EVA) return;
+                    VesselData.UpdateVesselSMA(vessel, VesselData.FetchSMA(vessel) - decayValue);
+                    Log.Info("CatchUpOrbit 7");
+                    CatchUpOrbit(vessel);
+                }
             }
         }
 
