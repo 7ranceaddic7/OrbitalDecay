@@ -67,7 +67,5 @@ namespace WhitecatIndustries
 
             return Area / 4.0; // only one side facing prograde
         }
-
-
     }
 }

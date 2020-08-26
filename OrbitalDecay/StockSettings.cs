@@ -17,16 +17,18 @@ namespace WhitecatIndustries
         public override int SectionOrder { get { return 1; } }
         public override bool HasPresets { get { return true; } }
 
-        [GameParameters.CustomParameterUI("RealisticDecay ",
+#if true
+        [GameParameters.CustomParameterUI("Realistic Decay ",
                   toolTip = "Use realistic values for decay")]
         public bool RealisticDecay = false;
+#endif
 
         [GameParameters.CustomParameterUI("24HourClock ")]
         public bool _24HourClock = false;
 
         [GameParameters.CustomFloatParameterUI("DecayDifficulty ", minValue = 0.5f, maxValue = 50f,
                   toolTip = "Higher means harder")]
-        public double DecayDifficulty = 10f;
+        public double DecayDifficulty = 1f;
 
         [GameParameters.CustomParameterUI("Planetarium Tracking ",
                   toolTip = "")]
@@ -36,6 +38,7 @@ namespace WhitecatIndustries
                   toolTip = "")]
         public bool PlanetariumDebrisTracking = true;
 
+#if false
         [GameParameters.CustomParameterUI("NBody Simulation ",
                   toolTip = "")]
         public bool NBodySimulation = false;
@@ -51,7 +54,7 @@ namespace WhitecatIndustries
         [GameParameters.CustomParameterUI("NBody Simulation Body Updating ",
                   toolTip = "")]
         public bool NBodySimulationBodyUpdating = true;
-
+#endif
 
 
         public override void SetDifficultyPreset(GameParameters.Preset preset) { }
@@ -72,7 +75,7 @@ namespace WhitecatIndustries
 
         [GameParameters.CustomFloatParameterUI("Resource Rate Difficulty ", minValue = 0.1f, maxValue = 10f,
                   toolTip = "")]
-        public double ResourceRateDifficulty = 10f;
+        public double ResourceRateDifficulty = 1f;
 
 
 

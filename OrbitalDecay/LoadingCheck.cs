@@ -51,7 +51,7 @@ using UnityEngine;
 
 namespace WhitecatIndustries.Source
 {
-    [KSPAddon(KSPAddon.Startup.MainMenu, false)]
+    [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class LoadingCheck : MonoBehaviour
     {
         //public string KSPOrbitDecayLite = KSPUtil.ApplicationRootPath + "GameData/WhitecatIndustries/OrbitDecayLite/KSPOrbitDecayLite.dll";

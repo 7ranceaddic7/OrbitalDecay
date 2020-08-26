@@ -64,8 +64,9 @@ namespace WhitecatIndustries.Source
         private float MultiplierValue = 5.0f;
         private float MultiplierValue2 = 5.0f;
 
+#if false
         internal static float NBodyStepsContainer;
-
+#endif
         private Vessel subwindowVessel = new Vessel();
 
         private  void Awake()
@@ -534,10 +535,11 @@ namespace WhitecatIndustries.Source
 
             double DecayDifficulty = Settings.ReadDecayDifficulty();
             double ResourceDifficulty = Settings.ReadResourceRateDifficulty();
+
+
+#if false
            bool NBody = Settings.ReadNB();
-
             string NBodyText = ""; // 1.6.0 N-Body 
-
             // 1.7.0 maybe?
             if (Settings.ReadNB())
             {
@@ -548,7 +550,7 @@ namespace WhitecatIndustries.Source
             {
                 NBodyText = "Enable N-Body Perturbations";
             }
-
+#endif
 
             GUILayout.Space(2);
             if (GUILayout.Button("Toggle Kerbin Day (6 hour) / Earth Day (24 hour)"))
@@ -629,7 +631,7 @@ namespace WhitecatIndustries.Source
 
             GUILayout.Space(2);
 
-
+#if false
             if (GUILayout.Button(NBodyText))
             {
                 Settings.WriteNBody(!NBody);
@@ -678,7 +680,7 @@ namespace WhitecatIndustries.Source
                     Settings.WriteNBodyConicsPatches(NBodyStepsContainer);
                 }
             }
-
+#endif
 
             GUILayout.EndVertical();
         }

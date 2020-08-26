@@ -40,17 +40,20 @@ namespace WhitecatIndustries.Source
             //FilePath = KSPUtil.ApplicationRootPath +                       "GameData/WhitecatIndustries/OrbitalDecay/PluginData/Settings.cfg";
             CheckStockSettings();
 
-           // SettingData.ClearData();
-           // SettingsNode = ConfigNode.Load(FilePath);
-           // foreach (ConfigNode item in SettingsNode.nodes)
-           // {
-           //     SettingData.AddNode(item);
-           // }
+            // SettingData.ClearData();
+            // SettingsNode = ConfigNode.Load(FilePath);
+            // foreach (ConfigNode item in SettingsNode.nodes)
+            // {
+            //     SettingData.AddNode(item);
+            // }
+#if false
             UserInterface.NBodyStepsContainer = (float) ReadNBCC();
+#endif
         }
 
         public void CheckStockSettings() // 1.6.0 Stock give me back my decaying orbits!!
         {
+            return;
             if (HighLogic.LoadedSceneIsGame)
             {
                 if (GameSettings.ORBIT_DRIFT_COMPENSATION)
@@ -76,6 +79,7 @@ namespace WhitecatIndustries.Source
 #endif
         }
 
+#if false
 
         public static void WriteNBody(bool NB) // 1.6.0 NBody
         {
@@ -116,7 +120,7 @@ namespace WhitecatIndustries.Source
             SimSet.SetValue("NBodySimulationBodyUpdating", NBB.ToString());
 #endif
         }
-
+#endif
 
         public static void Write24H(bool H24)
         {
@@ -187,6 +191,7 @@ namespace WhitecatIndustries.Source
 #endif
         }
 
+#if false
         public static bool ReadNB() // 1.6.0 NBody
         {
             return HighLogic.CurrentGame.Parameters.CustomParams<OD>().NBodySimulation;
@@ -230,6 +235,7 @@ namespace WhitecatIndustries.Source
             return NBCC;
 #endif
         }
+#endif
 
         public static bool Read24Hr()
         {
