@@ -8,6 +8,7 @@ rem VERSIONFILE is the name of the version file, usually the same as GAMEDATA,
 rem    but not always
 
 set H=%KSPDIR%
+set h=R:\KSP_1.9.1_dev_OrbitalDecay
 set GAMEDIR=WhitecatIndustries\OrbitalDecay
 set GAMEDATA="GameData"
 set VERSIONFILE=OrbitalDecay.version
@@ -17,4 +18,4 @@ copy /Y %VERSIONFILE% %GAMEDATA%\%GAMEDIR%
 
 xcopy /y /s /I %GAMEDATA%\%GAMEDIR% "%H%\GameData\%GAMEDIR%"
 
-rem pause
+ rem pause

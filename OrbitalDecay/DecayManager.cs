@@ -29,12 +29,13 @@ using System.Linq;
 using UnityEngine;
 using KSP_Log;
 
+#if true
 namespace WhitecatIndustries.Source
 {
-    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
+    [KSPAddon(KSPAddon.Startup.AllGameScenes, false)]
     public class DecayManager : MonoBehaviour
     {
-        #region Declared Variables
+#region Declared Variables
 
         static Log Log = null;
         private const float _uptInterval = 1.0f;
@@ -61,14 +62,14 @@ namespace WhitecatIndustries.Source
         //public static KeyCode QuickloadKeyMac = KeyCode.F6;
         public static float UpdateTimer;
 
-        #endregion
+#endregion
 
-        #region Unity Scene Subroutines
+#region Unity Scene Subroutines
 
         public void Start()
         {
             if (Log == null)
-                Log = new Log("DecayManager");
+                Log = new Log("DecayManager", Log.LEVEL.INFO);
 
             if (!HighLogic.LoadedSceneIsGame || HighLogic.LoadedScene == GameScenes.LOADING || HighLogic.LoadedScene == GameScenes.LOADINGBUFFER || HighLogic.LoadedScene == GameScenes.MAINMENU) return;
             CatchupResourceMassAreaDataComplete = false;
@@ -109,6 +110,7 @@ namespace WhitecatIndustries.Source
 
         internal static void CatchUpVessels(Vessel.Situations situation1, Vessel.Situations situation2)
         {
+            Log.Info("CatchUpVessels sit1 & sit2");
             IEnumerator<Vessel> vessels = FlightGlobals.Vessels.AsEnumerable().GetEnumerator();
             while (vessels.MoveNext())
             {
@@ -123,7 +125,7 @@ namespace WhitecatIndustries.Source
             vessels.Dispose();
         }
 
-        #region Update Subroutines
+#region Update Subroutines
 
         public void UpdateActiveVesselInformationEventReport(EventReport report) // 1.3.0
         {
@@ -135,7 +137,7 @@ namespace WhitecatIndustries.Source
 
         public void UpdateActiveVesselInformationPart(Part part) // Until eventdata OnPartResourceFlowState works! // 1.3.0
         {
-            if (part.vessel != FlightGlobals.ActiveVessel || TimeWarp.CurrentRate >1 /*!= 0 */) return;
+            if (part.vessel != FlightGlobals.ActiveVessel || TimeWarp.CurrentRate > 1 /*!= 0 */) return;
             if (HighLogic.LoadedScene != GameScenes.FLIGHT || GuiToggled) return;
             VesselData.UpdateActiveVesselData(FlightGlobals.ActiveVessel);
             GuiToggled = true;
@@ -201,11 +203,10 @@ namespace WhitecatIndustries.Source
         public void ClearVesselOnDestroy(Vessel vessel)
         {
             VesselData.ClearVesselData(vessel);
-            print("Vessel destroyed:" + vessel.GetName());
         }
-        #endregion
+#endregion
 
-        #region Check Subroutines 
+#region Check Subroutines 
 
         public static bool CheckSceneStateMain(GameScenes scene)
         {
@@ -220,6 +221,7 @@ namespace WhitecatIndustries.Source
             }
         }
 
+#if false
         public static bool CheckSceneStateMainNotSpaceCentre(GameScenes scene)
         {
             return scene != GameScenes.LOADING && scene != GameScenes.LOADINGBUFFER && HighLogic.LoadedSceneIsGame && scene != GameScenes.SPACECENTER;
@@ -249,6 +251,7 @@ namespace WhitecatIndustries.Source
         {
             return vessel.situation == Vessel.Situations.ORBITING && vessel == FlightGlobals.ActiveVessel;
         }
+#endif
 
         public static bool CheckVesselProximity(int id, Vessel vessel)
         {
@@ -284,7 +287,7 @@ namespace WhitecatIndustries.Source
             return close;
         }
 
-        #endregion
+#endregion
 
         public void FixedUpdate()
         {
@@ -308,7 +311,6 @@ namespace WhitecatIndustries.Source
                     }
                 }
             }
-
 
             if (Time.timeSinceLevelLoad > 0.4 &&
                 HighLogic.LoadedSceneIsFlight &&
@@ -339,6 +341,7 @@ namespace WhitecatIndustries.Source
                     CatchupResourceMassAreaDataComplete = true;
                 }
             }
+
             /*
             if (Time.timeSinceLevelLoad > 0.45) // NBody predictions
             {
@@ -374,19 +377,23 @@ namespace WhitecatIndustries.Source
             if (HighLogic.LoadedScene != GameScenes.SPACECENTER && 
                 HighLogic.LoadedScene != GameScenes.TRACKSTATION &&
                 HighLogic.LoadedScene != GameScenes.FLIGHT) return;
-#endif 
+#endif
+            VesselType[] ExcludedTypes = { VesselType.SpaceObject, VesselType.Unknown, VesselType.Debris };
+
             for (int i = 0; i < FlightGlobals.Vessels.Count; i++)
             {
                 Vessel vessel = FlightGlobals.Vessels[i];
-
                 if (vessel.situation != Vessel.Situations.ORBITING &&
-                    (vessel.situation != Vessel.Situations.SUB_ORBITAL || vessel == FlightGlobals.ActiveVessel) // || !vessel.packed) // vessel != vessel.packed)
+                    (vessel.situation != Vessel.Situations.SUB_ORBITAL) // || !vessel.packed) // vessel != vessel.packed)
                      ) continue;
+                if (ExcludedTypes.Contains(vessel.vesselType)) continue;
 
-                if (VesselData.FetchStationKeeping(vessel) == false)
+                if (VesselData.FetchStationKeeping(vessel) == false && vessel.isActiveVessel)
                 {
                     if (VesselData.FetchSMA(vessel) > 0)
                     {
+                        Log.Info("FixedUpdate\nDecayManager: Time: " + Time.time.ToString("F1") + ", Vessel name: " + vessel.name + ", vessel.packed: " + vessel.packed + ", Apoapsis: " + vessel.orbit.ApA.ToString("F8") + ", Periapsis: " + vessel.orbit.PeA.ToString("F8"));
+
                         if (!vessel.packed)
                         {
                             if (Settings.ReadRD())
@@ -404,19 +411,29 @@ namespace WhitecatIndustries.Source
                         }
                     }
 
-                    if (HighLogic.LoadedScene != GameScenes.TRACKSTATION || Settings.ReadPT() != true) continue;
-                    if (Settings.ReadDT())
+                    if (vessel.isActiveVessel)
                     {
-                        Log.Info("CatchUpOrbit 3");
-                        CatchUpOrbit(vessel);
-                    }
-                    else if (Settings.ReadDT() == false && vessel.vesselType != VesselType.Debris)
-                    {
-                        Log.Info("CatchUpOrbit 4");
+                        Log.Info("CatchUpOrbit 3.1");
                         CatchUpOrbit(vessel);
                     }
                     else
                     {
+                        if (HighLogic.LoadedScene != GameScenes.TRACKSTATION || Settings.ReadPT() != true /* || vessel.isActiveVessel */ ) continue;
+#if true
+                        if (Settings.ReadDT() && vessel.vesselType == VesselType.Debris)
+                        {
+                            Log.Info("CatchUpOrbit 3");
+                            CatchUpOrbit(vessel);
+                        }
+                        else if (Settings.ReadDT() == false && vessel.vesselType != VesselType.Debris)
+                        {
+                            Log.Info("CatchUpOrbit 4");
+                            CatchUpOrbit(vessel);
+                        }
+                        else
+                        {
+                        }
+#endif
                     }
                 }
                 else
@@ -458,10 +475,11 @@ namespace WhitecatIndustries.Source
             CatchUpVessels(Vessel.Situations.ORBITING);
         }
 
-        #endregion
+#endregion
 
-        #region Active Specific Subroutines
+#region Active Specific Subroutines
 
+#if false
         public void ActiveVesselOrbitManage()
         {
             // Redundant in 1.1.0
@@ -472,10 +490,11 @@ namespace WhitecatIndustries.Source
             VesselData.WriteVesselData(FlightGlobals.ActiveVessel);
 
         } // Redundant in 1.1.0
+#endif
 
         public static void CatchUpOrbit(Vessel vessel)
         {
-
+            Log.Info("CatchUpOrbit vessel");
             if (vessel.situation == Vessel.Situations.PRELAUNCH || vessel.situation == Vessel.Situations.LANDED) return;
 
             if (VesselData.FetchSMA(vessel) >= vessel.GetOrbitDriver().orbit.semiMajorAxis ||
@@ -520,6 +539,10 @@ namespace WhitecatIndustries.Source
 
 
             orbit.UpdateFromUT(HighLogic.CurrentGame.UniversalTime);
+
+
+
+
             vessel.orbitDriver.pos = vessel.orbit.pos.xzy; // Possibly remove these for NBody
             vessel.orbitDriver.vel = vessel.orbit.vel; // Possibly remove these for NBody
 
@@ -528,23 +551,46 @@ namespace WhitecatIndustries.Source
             GameEvents.HostedFromToAction<Vessel, CelestialBody> evnt = new GameEvents.HostedFromToAction<Vessel, CelestialBody>(vessel, oldBody, newBody);
             GameEvents.onVesselSOIChanged.Fire(evnt);
             VesselData.UpdateBody(vessel, newBody);
+
+#if false
+            //Vector3d position = vessel.orbit.getRelativePositionAtUT(Planetarium.GetUniversalTime());
+            Orbit orbit2 = new Orbit(vessel.orbit.inclination, vessel.orbit.eccentricity, vessel.orbit.semiMajorAxis, vessel.orbit.LAN, vessel.orbit.argumentOfPeriapsis, vessel.orbit.meanAnomalyAtEpoch, vessel.orbit.epoch, vessel.orbit.referenceBody);
+
+            vessel.orbit.inclination = orbit2.inclination;
+            vessel.orbit.eccentricity = orbit2.eccentricity;
+            vessel.orbit.semiMajorAxis = orbit2.semiMajorAxis;
+            vessel.orbit.LAN = orbit2.LAN;
+            vessel.orbit.argumentOfPeriapsis = orbit2.argumentOfPeriapsis;
+            vessel.orbit.meanAnomalyAtEpoch = orbit2.meanAnomalyAtEpoch;
+            vessel.orbit.epoch = orbit2.epoch;
+            vessel.orbit.referenceBody = orbit2.referenceBody;
+            vessel.orbit.Init();
+
+            //vessel.orbit.UpdateFromOrbitAtUT(orbit2, Planetarium.GetUniversalTime(), orbit2.referenceBody);
+            vessel.orbit.UpdateFromUT(Planetarium.GetUniversalTime());
+#endif
+
         } // Main Orbit Set
 
-        #endregion
+#endregion
 
-        #region Misc Calculation Subroutines
+#region Misc Calculation Subroutines
 
         public static double CalculateNewEccentricity(double oldEccentricity, double oldSma, double newSma) // 1.4.0 needs balancing maybe
         {
+            Log.Info("CalculateNewEccentricity, oldEcc: " + oldEccentricity + ", oldSma: " + oldSma + ", newSma: " + newSma);
             double newEccentricity = 0.0;
             double fixedSemiMinorAxis = oldSma * Math.Sqrt(1.0 - Math.Pow(oldEccentricity, 2.0));
-            newEccentricity = Math.Sqrt(1.0 - Math.Pow(fixedSemiMinorAxis, 2.0) / Math.Pow(newSma, 2.0)); //
+            Log.Info("CalculateNewEccentricity, fixedSemiMinorAxis: " + fixedSemiMinorAxis);
+
+            //newEccentricity = Math.Sqrt(1.0 - Math.Pow(fixedSemiMinorAxis, 2.0) / Math.Pow(newSma, 2.0)); //
+            newEccentricity = Math.Sqrt(1.0 - Math.Pow(newSma, 2.0) / Math.Pow(fixedSemiMinorAxis, 2.0)); //
             return newEccentricity;
         }
 
-        #endregion
+#endregion
 
-        #region Decay Simulator
+#region Decay Simulator
 
         public static bool CheckReferenceBody(Vessel vessel) // 1.6.0 Body Checks
         {
@@ -564,24 +610,27 @@ namespace WhitecatIndustries.Source
 
         }
 
+#if false
         public static bool CheckNBodyAltitude(Vessel vessel)
         {
             bool beyondSafeArea = Math.Abs(vessel.orbitDriver.orbit.altitude) > 2.0 * vessel.orbitDriver.orbit.referenceBody.Radius;
 
             return beyondSafeArea;
         }
-
+#endif
 
         public static void RealisticDecaySimulator(Vessel vessel) // 1.4.0 Cleanup
         {
+            Log.Info("RealisticDecaySimulator 1");
             Orbit orbit = vessel.orbitDriver.orbit;
             CelestialBody body = orbit.referenceBody;
 
+#if false
             if (Settings.ReadNB() && CheckNBodyAltitude(vessel))
             {
                 if (vessel.situation == Vessel.Situations.ORBITING) // For the moment
                 {
-                    #region NBody debugging
+#region NBody debugging
                     /*
                     print("Pos: " + vessel.orbitDriver.orbit.getRelativePositionAtUT(HighLogic.CurrentGame.UniversalTime));
                     print("PosAtUT: " + vessel.orbitDriver.orbit.getPositionAtUT(HighLogic.CurrentGame.UniversalTime));
@@ -595,13 +644,15 @@ namespace WhitecatIndustries.Source
                     print("Energy: " + vessel.orbitDriver.orbit.orbitalEnergy);
                     print("Energy Calculated: " + (((Math.Pow(vessel.orbit.vel.magnitude, 2.0)) / 2.0) - (vessel.orbitDriver.orbit.referenceBody.gravParameter / (vessel.orbitDriver.orbit.altitude + vessel.orbit.referenceBody.Radius))));
                     */
-                    #endregion
+#endregion
 
                     // NBodyManager.ManageVessel(vessel); // 1.6.0 N-Body master reference maybe 1.7.0?
                 }
             }
-
+#endif
             if (!CheckReferenceBody(vessel)) return;
+            Log.Info("RealisticDecaySimulator 2");
+
             RealisticGravitationalPertubationDecay(vessel); // 1.5.0
             RealisticRadiationDragDecay(vessel); // 1.5.0 Happens everywhere now
             RealisticYarkovskyEffectDecay(vessel); // 1.5.0 // Partial, full for 1.6.0
@@ -620,19 +671,21 @@ namespace WhitecatIndustries.Source
 
             CheckVesselSurvival(vessel);
         }
-        #endregion
+#endregion
 
-        #region Decay Simulator Subroutines
+#region Decay Simulator Subroutines
 
         public static void RealisticAtmosphericDragDecay(Vessel vessel)
         {
+            Log.Info("RealisticAtmosphericDragDecay 1");
             Orbit orbit = vessel.orbitDriver.orbit;
             CelestialBody body = orbit.referenceBody;
 
             double initialSemiMajorAxis = VesselData.FetchSMA(vessel);
             double maxInfluence = body.Radius * 1.5;
 
-            if (!(initialSemiMajorAxis < maxInfluence)) return;
+            if (initialSemiMajorAxis >= maxInfluence) return;
+            Log.Info("RealisticAtmosphericDragDecay 2");
             double standardGravitationalParameter = body.gravParameter;
             double cartesianPositionVectorMagnitude = orbit.getRelativePositionAtT(HighLogic.CurrentGame.UniversalTime).magnitude; // Planetarium to HighLogic
             double equivalentAltitude = initialSemiMajorAxis - body.Radius;
@@ -667,11 +720,12 @@ namespace WhitecatIndustries.Source
 
             double distanceTravelled = initialOrbitalVelocity; // Meters
             double vesselMass = VesselData.FetchMass(vessel);   // Kg
+#if false
             if (vesselMass == 0)
             {
                 vesselMass = 100.0; // Default is 100kg
             }
-
+#endif
             equivalentAltitude = equivalentAltitude / 1000.0;
 
             double molecularMass = 27.0 - 0.0012 * (equivalentAltitude - 200.0);
@@ -689,15 +743,17 @@ namespace WhitecatIndustries.Source
             double decayValue = initialSemiMajorAxis - finalSemiMajorAxis;
 
             double multipliers = TimeWarp.CurrentRate * Settings.ReadDecayDifficulty();
-
+            Log.Info("RealisticAtmosphericDragDecay, multipliers: " + multipliers + ", decayValue: " + decayValue + ",   SMA adjust: " + decayValue * multipliers);
             VesselData.UpdateVesselSMA(vessel, initialSemiMajorAxis - decayValue * multipliers);
             VesselData.UpdateVesselLAN(vessel, VesselData.FetchLAN(vessel));
 
             // Possibly update vessel LAN too? - 1.5.0
         } // Requires SCS
 
+
         public static void StockAtmosphericDragDecay(Vessel vessel)
         {
+            Log.Info("StockAtmosphericDragDecay 1");
             Orbit orbit = vessel.orbitDriver.orbit;
             CelestialBody body = orbit.referenceBody;
 
@@ -712,9 +768,14 @@ namespace WhitecatIndustries.Source
             // Eccentricity updating
             double newEccentricity = VesselData.FetchECC(vessel);
             // Still having problems here!
-            // NewEccentricity = CalculateNewEccentricity(VesselData.FetchECC(vessel), InitialSemiMajorAxis, (InitialSemiMajorAxis - (DecayRateRealistic(vessel) / 10)));
-            VesselData.UpdateVesselECC(vessel, newEccentricity);
+            //NewEccentricity = CalculateNewEccentricity(VesselData.FetchECC(vessel), InitialSemiMajorAxis, (InitialSemiMajorAxis - (DecayRateRealistic(vessel) / 10)));
 
+#if false
+            double newSMA = initialSemiMajorAxis - DecayRateAtmosphericDrag(vessel);
+            newEccentricity = CalculateNewEccentricity(VesselData.FetchECC(vessel), initialSemiMajorAxis, (VesselData.FetchSMA(vessel) - (DecayRateAtmosphericDrag(vessel))));
+            Log.Info("oldEccentricity: " + VesselData.FetchECC(vessel) + ", new Ecc: " + newEccentricity + ", DecayRateAtmosphericDrag(vessel): " + DecayRateAtmosphericDrag(vessel));
+            VesselData.UpdateVesselECC(vessel, newEccentricity);
+#endif
             double eccentricity = newEccentricity;
 
             if (eccentricity > 0.085)
@@ -739,10 +800,12 @@ namespace WhitecatIndustries.Source
 
             double distanceTravelled = initialOrbitalVelocity; // Meters
             double vesselMass = VesselData.FetchMass(vessel);   // Kg
-            if (vesselMass == 0)
+#if false
+           if (vesselMass == 0)
             {
                 vesselMass = 1000.0; // Default is 100kg
             }
+#endif
 
             equivalentAltitude = equivalentAltitude / 1000.0;
 
@@ -753,6 +816,10 @@ namespace WhitecatIndustries.Source
             double finalSemiMajorAxis = Math.Pow(Math.Pow(finalPeriod / (2 * Math.PI), 2.0) * standardGravitationalParameter, 1.0 / 3.0);
             double decayValue = initialSemiMajorAxis - finalSemiMajorAxis;
             double multipliers = TimeWarp.CurrentRate * Settings.ReadDecayDifficulty();
+
+            //newEccentricity = CalculateNewEccentricity(VesselData.FetchECC(vessel), initialSemiMajorAxis, finalSemiMajorAxis);
+            //VesselData.UpdateVesselECC(vessel, newEccentricity);
+            Log.Info("StockAtmosphericDragDecay, multipliers: " + multipliers + ", decayValue: " + decayValue + ",   SMA adjust: " + decayValue * multipliers);
 
             VesselData.UpdateVesselSMA(vessel, initialSemiMajorAxis - decayValue * multipliers);
             VesselData.UpdateVesselLAN(vessel, VesselData.FetchLAN(vessel));
@@ -782,10 +849,12 @@ namespace WhitecatIndustries.Source
             }
 
             double vesselMass = VesselData.FetchMass(vessel);   // Kg
+#if false
             if (vesselMass == 0)
             {
                 vesselMass = 100.0;
             }
+#endif
 
             double vesselRadius = Math.Sqrt(vesselArea / Math.PI);
             double immobileAccelleration = Math.PI * (vesselRadius * vesselRadius) * solarConstant / (vesselMass * speedOfLight * (solarDistance * solarDistance));
@@ -830,9 +899,9 @@ namespace WhitecatIndustries.Source
         }
 
 
-        #endregion
+#endregion
 
-        #region Old Stock 
+#region Old Stock 
 
         /*
         public static void StockDecaySimulator(Vessel vessel)
@@ -861,10 +930,12 @@ namespace WhitecatIndustries.Source
                     Area = 1.0;
                 }
                 double Mass = VesselData.FetchMass(vessel);
-                if (Mass == 0)
+#if false
+               if (Mass == 0)
                 {
                     Mass = 100.0; // Default 100Kg
                 }
+#endif
 
                 double DistanceMultiplier = Math.Pow(Math.E, ((vessel.orbitDriver.orbit.referenceBody.atmosphereDepth/1000) / ((VesselData.FetchSMA(vessel) - vessel.orbitDriver.orbit.referenceBody.Radius) / 1000)));
 
@@ -894,9 +965,9 @@ namespace WhitecatIndustries.Source
         }
         */
 
-        #endregion
+#endregion
 
-        #region Survival Checks 
+#region Survival Checks 
         public static void CheckVesselSurvival(Vessel vessel)
         {
             VesselDied = false;
@@ -908,7 +979,7 @@ namespace WhitecatIndustries.Source
                     if (VesselData.FetchSMA(vessel) < vessel.orbitDriver.orbit.referenceBody.Radius + vessel.orbitDriver.referenceBody.atmosphereDepth)
                     {
                         TimeWarp.SetRate(0, false);
-                        print("Warning: " + vessel.vesselName + " is approaching " + vessel.orbitDriver.referenceBody.name + "'s hard atmosphere");
+                        Log.Warning("Warning: " + vessel.vesselName + " is approaching " + vessel.orbitDriver.referenceBody.name + "'s hard atmosphere");
                         ScreenMessages.PostScreenMessage("Warning: " + vessel.vesselName + " is approaching " + vessel.orbitDriver.referenceBody.name + "'s hard atmosphere");
                         MessageDisplayed.Add(vessel, true);
                     }
@@ -941,24 +1012,25 @@ namespace WhitecatIndustries.Source
             if (VesselDied != true) return;
             if (vessel != FlightGlobals.ActiveVessel)
             {
-                print(vessel.vesselName + " entered " + vessel.orbitDriver.referenceBody.name + "'s atmosphere and was destroyed");
+                Log.Warning(vessel.vesselName + " entered " + vessel.orbitDriver.referenceBody.name + "'s atmosphere and was destroyed");
                 ScreenMessages.PostScreenMessage(vessel.vesselName + " entered " + vessel.orbitDriver.referenceBody.name + "'s atmosphere and was destroyed");
                 if (MessageDisplayed.ContainsKey(vessel))
                 {
                     MessageDisplayed.Remove(vessel);
                 }
                 VesselData.ClearVesselData(vessel);
-                print("WhitecatIndustries - Orbital Decay - Vessel died");
+                Log.Warning("WhitecatIndustries - Orbital Decay - Vessel died");
                 vessel.Die();
             }
             VesselDied = false;
         }
-        #endregion
+#endregion
 
-        #region Active Decay Subroutines
+#region Active Decay Subroutines
 
         public static void ActiveDecayRealistic(Vessel vessel)            // 1.4.0 Use Rigidbody.addForce
         {
+            Log.Info("ActiveDecayRealistic");
             if (!CheckReferenceBody(vessel)) return;
             double readTime = HighLogic.CurrentGame.UniversalTime;
             double decayValue = DecayRateTotal(vessel);
@@ -973,7 +1045,7 @@ namespace WhitecatIndustries.Source
             double decayForce = deltaVelocity * (VesselData.FetchMass(vessel) * 1000);
             GameObject thisVessel = new GameObject();
 
-            if (TimeWarp.CurrentRate > 1)
+            if (TimeWarp.CurrentRate > 0)
             {
                 if (/* TimeWarp.CurrentRate == 0 || TimeWarp.CurrentRate > 0 && */ TimeWarp.WarpMode == TimeWarp.Modes.LOW)
                 {
@@ -1011,6 +1083,7 @@ namespace WhitecatIndustries.Source
 
         public static void ActiveDecayStock(Vessel vessel)
         {
+            Log.Info("ActiveDecayStock");
             if (!CheckReferenceBody(vessel)) return;
             double readTime = HighLogic.CurrentGame.UniversalTime;
             double decayValue = DecayRateTotal(vessel);
@@ -1024,10 +1097,9 @@ namespace WhitecatIndustries.Source
             double decayForce = deltaVelocity * (VesselData.FetchMass(vessel) / 1000.0);
             GameObject thisVessel = new GameObject();
 
-            Log.Info("TimeWarp.CurrentRate: " + TimeWarp.CurrentRate);
-            if (TimeWarp.CurrentRate > 1)
+            if (TimeWarp.CurrentRate > 0)
             {
-                if (/* TimeWarp.CurrentRate == 0 || TimeWarp.CurrentRate > 1 && */ TimeWarp.WarpMode == TimeWarp.Modes.LOW)
+                if (TimeWarp.CurrentRate <=1 || /* TimeWarp.CurrentRate == 0 || TimeWarp.CurrentRate > 1 && */ TimeWarp.WarpMode == TimeWarp.Modes.LOW)
                 {
                     if (vessel.vesselType == VesselType.EVA) return;
 #if false
@@ -1057,9 +1129,9 @@ namespace WhitecatIndustries.Source
             }
         }
 
-        #endregion
+#endregion
 
-        #region Simulation Decay Rate Subroutines
+#region Simulation Decay Rate Subroutines
 
         public static double DecayRateRadiationPressure(Vessel vessel)
         {
@@ -1082,10 +1154,12 @@ namespace WhitecatIndustries.Source
             }
 
             double vesselMass = VesselData.FetchMass(vessel);   // Kg
-            if (vesselMass == 0)
+#if false
+           if (vesselMass == 0)
             {
                 vesselMass = 100.0;
             }
+#endif
 
             double vesselRadius = Math.Sqrt(vesselArea / Math.PI);
             double immobileAccelleration = Math.PI * (vesselRadius * vesselRadius) * solarConstant / (vesselMass * speedOfLight * (solarDistance * solarDistance));
@@ -1136,10 +1210,12 @@ namespace WhitecatIndustries.Source
 
                 double distanceTravelled = initialOrbitalVelocity; // Meters
                 double vesselMass = VesselData.FetchMass(vessel);   // Kg
-                if (vesselMass == 0)
+#if false
+               if (vesselMass == 0)
                 {
                     vesselMass = 100.0; // Default is 100kg
                 }
+#endif
 
                 equivalentAltitude = equivalentAltitude / 1000.0;
 
@@ -1192,10 +1268,12 @@ namespace WhitecatIndustries.Source
 
                 double distanceTravelled = initialOrbitalVelocity; // Meters
                 double vesselMass = VesselData.FetchMass(vessel);   // Kg
-                if (vesselMass == 0)
+#if false
+               if (vesselMass == 0)
                 {
                     vesselMass = 1000.0; // Default is 100kg
                 }
+#endif
 
                 equivalentAltitude = equivalentAltitude / 1000.0;
 
@@ -1247,6 +1325,7 @@ namespace WhitecatIndustries.Source
             return decayRate;
         }
 
+#if false
         public static double DecayRateNBodyPerturbation(Vessel vessel)
         {
             double decayRate = 0;
@@ -1256,6 +1335,7 @@ namespace WhitecatIndustries.Source
 
             return decayRate;
         }
+#endif
 
         public static double DecayRateTotal(Vessel vessel)
         {
@@ -1263,9 +1343,9 @@ namespace WhitecatIndustries.Source
             return total;
         } // Total for 1.5.0
 
-        #endregion
+#endregion
 
-        #region Editor Decay Rate Subroutines
+#region Editor Decay Rate Subroutines
 
         public static double EditorDecayRateRadiationPressure(double mass, double area, double sma, double eccentricity, CelestialBody body)
         {
@@ -1396,7 +1476,7 @@ namespace WhitecatIndustries.Source
                 double vesselMass = mass; // Kg
                 if (vesselMass == 0)
                 {
-                    vesselMass = 1000.0; // Default is 100kg
+                    vesselMass = 100.0; // Default is 100kg
                 }
 
                 equivalentAltitude = equivalentAltitude / 1000.0;
@@ -1416,10 +1496,10 @@ namespace WhitecatIndustries.Source
         } // 1.6.0
 
 
-        #endregion
+#endregion
 
 
-        #region Timing Subroutines
+#region Timing Subroutines
 
         public static double DecayTimePredictionExponentialsVariables(Vessel vessel)
         {
@@ -1464,10 +1544,12 @@ namespace WhitecatIndustries.Source
             }
 
             double vesselMass = VesselData.FetchMass(vessel);   // Kg
-            if (vesselMass == 0)
+#if false
+           if (vesselMass == 0)
             {
                 vesselMass = 1000.0;
             }
+#endif
 
             equivalentAltitude = equivalentAltitude + body.Radius;
 
@@ -1554,6 +1636,8 @@ namespace WhitecatIndustries.Source
             return Math.Abs((VesselData.FetchSMA(vessel) - vessel.orbitDriver.orbit.referenceBody.Radius) / (decayRateVariables / timewarpRate));
         }
 
-        #endregion
+#endregion
     }
 }
+
+#endif

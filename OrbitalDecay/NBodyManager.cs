@@ -136,10 +136,12 @@ namespace WhitecatIndustries.Source
             foreach (CelestialBody Body in InfluencingBodiesV(vessel))
             {
                 double VesselMass = VesselData.FetchMass(vessel);
-                if (VesselMass == 0) // Incase vesselData hasnt caught up! 
+#if false
+               if (VesselMass == 0) // Incase vesselData hasnt caught up! 
                 {
                     VesselMass = vessel.GetCorrectVesselMass() * 1000;
                 }
+#endif
 
                 double PhaseAngle = FindPhaseAngleBetweenObjects(vessel.orbit, Body.orbit);
 
@@ -443,10 +445,12 @@ namespace WhitecatIndustries.Source
             double Altitude = 0;
             double Mass = VesselData.FetchMass(vessel);
 
+#if false
             if (Mass == 0)
             {
                 Mass = vessel.GetCorrectVesselMass() * 1000;
             }
+#endif
 
 
             Vector3d BodyPosition = new Vector3d();

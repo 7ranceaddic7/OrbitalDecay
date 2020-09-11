@@ -98,7 +98,17 @@ namespace WhitecatIndustries.Source
         }
     }
 
-    public class MasConData : MonoBehaviour
+    [KSPAddon(KSPAddon.Startup.Instantly, false)]
+    public class MasConDataInit : MonoBehaviour
+    {
+
+        public void Start()
+        {
+            MasConData.LoadData();
+        }
+    }
+
+    public class MasConData // : MonoBehaviour
     {
         static Dictionary<string, GravityMap> gravityMapDict = null;
 

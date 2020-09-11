@@ -24,7 +24,7 @@ namespace WhitecatIndustries
 
         public static bool DecayBreakdownVisible;
         public static bool NBodyBreakdownVisible;
-        public static bool Visible { get {  return visible && !hideUI && !paused; } }
+        public static bool Visible { get { return visible && !hideUI && !paused; } }
 
         public void Awake()
         {
@@ -35,16 +35,16 @@ namespace WhitecatIndustries
                     ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.SPACECENTER | ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.MAPVIEW | ApplicationLauncher.AppScenes.VAB | ApplicationLauncher.AppScenes.SPH,
                     MODID,
                     "OrbitalDecayButton",
-                   "WhitecatIndustries/OrbitalDecay/Icon/Icon_Toolbar-38",
-                   "WhitecatIndustries/OrbitalDecay/Icon/Icon_Toolbar-24",
+                    "WhitecatIndustries/OrbitalDecay/Icon/Icon_Toolbar-38",
+                    "WhitecatIndustries/OrbitalDecay/Icon/Icon_Toolbar-24",
                     MODNAME
                 );
             }
-                curScene = HighLogic.LoadedScene;
-                GameEvents.onHideUI.Add(onHideUI);
-                GameEvents.onShowUI.Add(onShowUI);
-                GameEvents.onGamePause.Add(onGamePause);
-                GameEvents.onGameUnpause.Add(onGameUnpause);
+            curScene = HighLogic.LoadedScene;
+            GameEvents.onHideUI.Add(onHideUI);
+            GameEvents.onShowUI.Add(onShowUI);
+            GameEvents.onGamePause.Add(onGamePause);
+            GameEvents.onGameUnpause.Add(onGameUnpause);
             GameEvents.onGameSceneLoadRequested.Add(onGameSceneLoadRequested);
             visible = hideUI = paused = false;
             DontDestroyOnLoad(this);

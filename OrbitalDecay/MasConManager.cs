@@ -30,16 +30,9 @@ using UnityEngine;
 
 namespace WhitecatIndustries.Source
 {
-    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
-    public class MasConManager : MonoBehaviour
+    public class MasConManager //: MonoBehaviour
     {
         private static double _timeInterval = 1.0; // Timewarp managed by HighLogic Current Time 
-
-        public void Start()
-        {
-            MasConData.LoadData();
-        }
-
         #region LongPeriod
 
         public static double GetSecularSMAChange(Vessel vessel, double LAN, double MNA, double LPE, double e, double Inc, double SMA, double EPH)
@@ -136,7 +129,7 @@ namespace WhitecatIndustries.Source
 
             double EccentricAnomaly = vessel.orbitDriver.orbit.eccentricAnomaly;
             double InitialMeanAnomaly = OrbitalDecayUtilities.GetMeanAnomalyAtTime(vessel.orbitDriver.orbit.meanAnomalyAtEpoch, vessel.orbitDriver.orbit.epoch, vessel.orbitDriver.orbit.period, HighLogic.CurrentGame.UniversalTime);
-            double MeanAnomalyAtTime = OrbitalDecayUtilities.GetMeanAnomalyAtTime(vessel.orbitDriver.orbit.meanAnomalyAtEpoch, vessel.orbitDriver.orbit.epoch, vessel.orbitDriver.orbit.period, HighLogic.CurrentGame.UniversalTime + _timeInterval); 
+            double MeanAnomalyAtTime = OrbitalDecayUtilities.GetMeanAnomalyAtTime(vessel.orbitDriver.orbit.meanAnomalyAtEpoch, vessel.orbitDriver.orbit.epoch, vessel.orbitDriver.orbit.period, HighLogic.CurrentGame.UniversalTime + _timeInterval);
 
             double ExactInitialEccentricAnomaly = 0; // E0 [Degrees]  
             ExactInitialEccentricAnomaly = vessel.orbitDriver.orbit.GetEccentricAnomaly(HighLogic.CurrentGame.UniversalTime); ;
@@ -539,7 +532,7 @@ namespace WhitecatIndustries.Source
             double TimePassedPerIntervalOfTimewarp = TimeWarp.CurrentRate * _timeInterval;
             double NoOfRevolutions = TimePassedPerIntervalOfTimewarp / vessel.orbitDriver.orbit.period;
 
-            double DeltaLPE = - (3.0 * Math.PI * (MasConMass / BodyMass) * Math.Pow(BodyRadius / SemiLatusRectum, 2.0) * (1.0 - 3.0 / 2.0 * (Math.Pow(SubvectorA, 2.0) +
+            double DeltaLPE = -(3.0 * Math.PI * (MasConMass / BodyMass) * Math.Pow(BodyRadius / SemiLatusRectum, 2.0) * (1.0 - 3.0 / 2.0 * (Math.Pow(SubvectorA, 2.0) +
                                                                                                                                                Math.Pow(SubvectorB, 2.0)))) - Math.Cos(Inc) * GetSecularLANChange(vessel, LAN, MNA, LPE, e, Inc, SMA, EPH);
             return DeltaLPE * NoOfRevolutions; // Change in LPE during the timewarp period 
         }
@@ -1302,7 +1295,7 @@ namespace WhitecatIndustries.Source
             #endregion
 
 
-            double RateOfChangeOfLANDeltaTheta = SubvectorS * Math.Pow(VesselAltitude, 3.0) * Math.Sin(ArgumentOfLatitude) / (Math.Pow(MeanMotion, 2.0) * 
+            double RateOfChangeOfLANDeltaTheta = SubvectorS * Math.Pow(VesselAltitude, 3.0) * Math.Sin(ArgumentOfLatitude) / (Math.Pow(MeanMotion, 2.0) *
                 Math.Pow(SMA, 3.0) * SemiLatusRectum * Math.Sin(Inc)); // [Degrees per Degree] 
 
             double RateOfChangeOfLANDeltaTime = RateOfChangeOfLANDeltaTheta * RateOfChangeOfTrueAnomaly;

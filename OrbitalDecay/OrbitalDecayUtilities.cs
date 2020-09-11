@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace WhitecatIndustries.Source
 {
-    internal class OrbitalDecayUtilities : MonoBehaviour // Hopefully A new utilities class to clear up some clutter
+    internal class OrbitalDecayUtilities // : MonoBehaviour // Hopefully A new utilities class to clear up some clutter
     {
         public static Vector3d FlipYZ(Vector3d vector)
         {

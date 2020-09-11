@@ -36,6 +36,7 @@ namespace WhitecatIndustries.Source
 
         public override void OnLoad(ConfigNode node)
         {
+            VesselData.VesselInformationDict.Clear();
             try
             {
                 base.OnLoad(node);

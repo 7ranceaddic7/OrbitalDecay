@@ -34,3 +34,8 @@ Changelog
 	Fixed stuttering and resetting of vessel orbital position
 	Fixed issues with timerate not being honored correctly
 	Cleaned up code regarding timerate
+
+1.7.0.3
+	Removed all N-Body references
+	Fixed the initializaiton of the Current Decay Multiplier and Resource drain rate multiplier to be 1
+	Excluded following from calcs:   VesselType.SpaceObject, VesselType.Unknown, VesselType.Debris

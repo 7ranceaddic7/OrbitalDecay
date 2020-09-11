@@ -30,6 +30,7 @@ using UnityEngine;
 
 namespace WhitecatIndustries.Source
 {
+
     public class ModuleOrbitalDecay : PartModule
     {
 
@@ -90,21 +91,22 @@ namespace WhitecatIndustries.Source
         }
 
 
-
+#if false
         public ModuleOrbitalDecay()
         {
 
+
+        }
+#endif
+
+        public override void OnStart(StartState state)
+        {
             if (stationKeepData == null)
             {
                 stationKeepData = new StationKeepData();
 
             }
 
-
-        }
-
-        public override void OnStart(StartState state)
-        {
             /*
                         BaseField field = this.Fields["ODSKengine"];
                         field.guiActive = stationKeepData.IsStationKeeping;
@@ -280,8 +282,6 @@ namespace WhitecatIndustries.Source
 
         public override void OnUpdate()
         {
-
-
             if (stationKeepData.IsStationKeeping && vessel == FlightGlobals.ActiveVessel)
             {
                 foreach (ModuleEngines module in vessel.FindPartModulesImplementing<ModuleEngines>())
@@ -358,12 +358,8 @@ namespace WhitecatIndustries.Source
             }
             return amount;
         }
-
-
-
-
-
     }
+
     [Serializable]
     public class StationKeepData : IConfigNode
     {

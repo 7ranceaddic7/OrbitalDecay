@@ -37,16 +37,11 @@ namespace WhitecatIndustries.Source
         {
             bool CanStationKeep = false;
 
-
-
-
-
             return CanStationKeep;
         }
 
         public static bool EngineCheck(Vessel vessel) // 1.3.0
         {
-
             bool HasEngine = false;
 
             if (vessel != FlightGlobals.ActiveVessel)
